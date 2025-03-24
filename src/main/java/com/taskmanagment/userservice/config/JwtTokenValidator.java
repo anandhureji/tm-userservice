@@ -1,9 +1,8 @@
-package com.taskmanagment.userservice.model.config;
+package com.taskmanagment.userservice.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @Configuration
@@ -29,12 +29,15 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String jwtRequest = request.getHeader(JwtConstant.JWT_HEADER);
-        if(jwtRequest!=null){
+        if(jwtRequest!=null && jwtRequest.startsWith("Bearer ")){
             jwtRequest = jwtRequest.substring(7);
             try {
-                SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
-                Claims claims = Jwts.parser().setSigningKey(key).build()
-                        .parseClaimsJwt(jwtRequest).getBody();
+                byte[] keyBytes = JwtConstant.SECRET_KEY.getBytes();
+                SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+                Claims claims = Jwts.parser()
+                        .setSigningKey(key).build()
+                        .parseClaimsJws(jwtRequest)
+                        .getBody();
                 String email = String.valueOf(claims.get("email"));
                 String authorities = String.valueOf(claims.get("authorities"));
                 List<GrantedAuthority> grantedAuthorities =

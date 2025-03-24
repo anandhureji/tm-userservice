@@ -1,4 +1,4 @@
-package com.taskmanagment.userservice.model.config;
+package com.taskmanagment.userservice.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
